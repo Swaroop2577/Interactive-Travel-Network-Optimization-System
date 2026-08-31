@@ -29,6 +29,7 @@ const dotIcon = (color) =>
 
 const redIcon = dotIcon('#e53935');
 const purpleIcon = dotIcon('#9c27b0');
+const defaultIcon = new L.Icon.Default();
 
 // Colors mirror the SVG visualization's CSS variables (see styles.css) so the
 // map animation looks consistent with the rest of the app.
@@ -149,7 +150,7 @@ const MapView = ({
           ? redIcon
           : isVisited
           ? purpleIcon
-          : undefined; // undefined -> Leaflet's default blue marker
+          : defaultIcon;
 
         return (
           <Marker key={node.id} position={[node.lat, node.lng]} icon={icon}>
