@@ -273,3 +273,28 @@ select:focus, input:focus {
   stroke-width: 5 !important;
   transition: all 0.5s ease-in-out;
 }
+
+.trip-route {
+  font-size: 1.15em;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin: 8px 0;
+}
+
+.budget-ok {
+  color: #2e7d32;
+  font-weight: 700;
+  background: #e8f5e9;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 4px solid #2e7d32;
+}
+
+.budget-over {
+  color: #c62828;
+  font-weight: 700;
+  background: #ffebee;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 4px solid #c62828;
+}

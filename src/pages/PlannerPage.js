@@ -19,6 +19,7 @@ const PlannerPage = () => {
   const [endNodeId, setEndNodeId] = useState('');
   const [shortestPathMetric, setShortestPathMetric] = useState('distance');
   const [cheapestNetworkMetric, setCheapestNetworkMetric] = useState('cost');
+  const [budget, setBudget] = useState('');
 
   const [results, setResults] = useState(null);
   const [visualizationSteps, setVisualizationSteps] = useState([]);
@@ -103,6 +104,17 @@ const PlannerPage = () => {
                   <option key={key} value={key}>{label}</option>
                 ))}
               </select>
+              <label className="note" htmlFor="budget-input">
+                Budget (₹, optional)
+                <input
+                  id="budget-input"
+                  type="number"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  placeholder="e.g. 10000"
+                  style={{ marginTop: '6px' }}
+                />
+              </label>
               <button onClick={handleRunAlgorithm} className="button primary-button">
                 Find Path
               </button>
@@ -133,13 +145,22 @@ const PlannerPage = () => {
               <>
                 {results.type === 'shortestPath' && results.data.path.length > 0 ? (
                   <>
-                    <h3 className="result-title">Dijkstra's Path</h3>
-                    <p>
-                      Path: **{results.data.path.map((id) => nodes.find((n) => n.id === id)?.label).join(' → ')}**
+                    <h3 className="result-title">Trip</h3>
+                    <p className="trip-route">
+                      {results.data.path.map((id) => nodes.find((n) => n.id === id)?.label).join(' → ')}
                     </p>
-                    <p>
-                      Total {shortestPathMetric}: **{results.data.distance} {METRIC_LABELS[shortestPathMetric].unit}**
-                    </p>
+                    <p>Distance: {results.data.metrics.distance.toLocaleString('en-IN')} km</p>
+                    <p>Estimated cost: ₹{results.data.metrics.cost.toLocaleString('en-IN')}</p>
+                    <p>Travel time: {results.data.metrics.time}h</p>
+                    {budget !== '' && (
+                      Number(budget) >= results.data.metrics.cost ? (
+                        <p className="budget-ok">✓ Within budget (₹{Number(budget).toLocaleString('en-IN')})</p>
+                      ) : (
+                        <p className="budget-over">
+                          ✕ Over budget by ₹{(results.data.metrics.cost - Number(budget)).toLocaleString('en-IN')}
+                        </p>
+                      )
+                    )}
                   </>
                 ) : results.type === 'shortestPath' ? (
                   <p>No path found.</p>

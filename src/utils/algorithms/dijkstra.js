@@ -1,3 +1,23 @@
+// Sums each of distance/cost/time along a resolved path, independent of which
+// metric Dijkstra optimized for. Lets the UI show "Distance: X km, Cost: ₹Y,
+// Time: Zh" together even though the algorithm only minimized one of them.
+const getPathMetrics = (edges, path) => {
+  const totals = { distance: 0, cost: 0, time: 0 };
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i];
+    const b = path[i + 1];
+    const edge = edges.find(
+      (e) => (e.source === a && e.target === b) || (e.source === b && e.target === a)
+    );
+    if (edge) {
+      totals.distance += edge.distance || 0;
+      totals.cost += edge.cost || 0;
+      totals.time += edge.time || 0;
+    }
+  }
+  return totals;
+};
+
 export const runDijkstra = (nodes, edges, startNodeId, endNodeId, edgeType) => {
   const distances = {};
   const previous = {};
@@ -52,7 +72,7 @@ export const runDijkstra = (nodes, edges, startNodeId, endNodeId, edgeType) => {
     }
     currentNode = nextNode;
   }
-  
+
   const path = [];
   let current = endNodeId;
   while (current) {
@@ -67,8 +87,8 @@ export const runDijkstra = (nodes, edges, startNodeId, endNodeId, edgeType) => {
   });
 
   if (path[0] !== startNodeId) {
-    return { path: [], distance: Infinity, steps };
+    return { path: [], distance: Infinity, metrics: { distance: 0, cost: 0, time: 0 }, steps };
   }
 
-  return { path, distance: distances[endNodeId], steps };
+  return { path, distance: distances[endNodeId], metrics: getPathMetrics(edges, path), steps };
 };
