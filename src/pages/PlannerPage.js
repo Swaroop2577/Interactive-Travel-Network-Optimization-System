@@ -11,6 +11,16 @@ const METRIC_LABELS = {
   time: { label: 'By Travel Time', unit: 'h' },
 };
 
+const formatResult = (value) => {
+  if (!Number.isFinite(value)) return '∞';
+
+  return Number(value).toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+
 const PlannerPage = () => {
   const { nodes, edges } = useGraph();
   const [algoType, setAlgoType] = useState('shortestPath');
@@ -149,12 +159,12 @@ const PlannerPage = () => {
                     <p className="trip-route">
                       {results.data.path.map((id) => nodes.find((n) => n.id === id)?.label).join(' → ')}
                     </p>
-                    <p>Distance: {results.data.metrics.distance.toLocaleString('en-IN')} km</p>
-                    <p>Estimated cost: ₹{results.data.metrics.cost.toLocaleString('en-IN')}</p>
-                    <p>Travel time: {results.data.metrics.time}h</p>
+                    <p>Distance: {formatResult(results.data.metrics.distance)} km</p>
+                    <p>Estimated cost: ₹ {formatResult(results.data.metrics.cost)}</p>
+                    <p>Travel time: {formatResult(results.data.metrics.time)} hr</p>
                     {budget !== '' && (
                       Number(budget) >= results.data.metrics.cost ? (
-                        <p className="budget-ok">✓ Within budget (₹{Number(budget).toLocaleString('en-IN')})</p>
+                        <p className="budget-ok">✓ Within budget (₹ {Number(budget).toLocaleString('en-IN')})</p>
                       ) : (
                         <p className="budget-over">
                           ✕ Over budget by ₹{(results.data.metrics.cost - Number(budget)).toLocaleString('en-IN')}
@@ -170,8 +180,9 @@ const PlannerPage = () => {
                   <>
                     <h3 className="result-title">Cheapest Network ({mstAlgo.toUpperCase()})</h3>
                     <p>
-                      Minimum {cheapestNetworkMetric}: **{results.data.cost} {METRIC_LABELS[cheapestNetworkMetric].unit}**
-                    </p>
+                      Minimum {METRIC_LABELS[cheapestNetworkMetric].label}:{' '}
+                      {formatResult(results.data.cost)} {METRIC_LABELS[cheapestNetworkMetric].unit}
+                      </p>
                     <p>Total Edges: {results.data.tree.length}</p>
                   </>
                 )}
