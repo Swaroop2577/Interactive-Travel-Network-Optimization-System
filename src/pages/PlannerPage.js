@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MapView from '../components/MapView';
 import { useGraph } from '../context/GraphContext';
 import { runDijkstra } from '../utils/algorithms/dijkstra';
@@ -22,14 +21,29 @@ const PlannerPage = () => {
   const [cheapestNetworkMetric, setCheapestNetworkMetric] = useState('cost');
 
   const [results, setResults] = useState(null);
+  const [visualizationSteps, setVisualizationSteps] = useState([]);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  // Advance through the recorded algorithm steps every 700ms, same cadence as before.
+  useEffect(() => {
+    if (visualizationSteps.length > 0 && currentStep < visualizationSteps.length - 1) {
+      const timer = setTimeout(() => {
+        setCurrentStep((s) => s + 1);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, visualizationSteps]);
 
   const handleRunAlgorithm = () => {
     setResults(null);
+    setVisualizationSteps([]);
+    setCurrentStep(0);
 
     if (algoType === 'shortestPath') {
       if (!startNodeId || !endNodeId) return;
       const algoResult = runDijkstra(nodes, edges, startNodeId, endNodeId, shortestPathMetric);
       setResults({ type: 'shortestPath', algo: 'dijkstra', data: algoResult });
+      setVisualizationSteps(algoResult.steps || []);
     } else if (algoType === 'cheapestNetwork') {
       if (nodes.length === 0) return;
       const algoResult =
@@ -37,11 +51,16 @@ const PlannerPage = () => {
           ? runPrims(nodes, edges, cheapestNetworkMetric)
           : runKruskals(nodes, edges, cheapestNetworkMetric);
       setResults({ type: 'mst', algo: mstAlgo, data: algoResult });
+      setVisualizationSteps(algoResult.steps || []);
     }
   };
 
-  const highlightedPath = results?.type === 'shortestPath' ? results.data.path : [];
-  const highlightedEdges = results?.type === 'mst' ? results.data.tree : [];
+  const currentVizStep = visualizationSteps[currentStep] || {};
+  const isFinalStep = !!currentVizStep.final;
+
+  // Only show the final red path/tree once the animation has reached its last step.
+  const highlightedPath = results?.type === 'shortestPath' && isFinalStep ? results.data.path : [];
+  const highlightedEdges = results?.type === 'mst' && isFinalStep ? results.data.tree : [];
 
   return (
     <div className="page planner-page">
@@ -142,7 +161,14 @@ const PlannerPage = () => {
 
         <main className="graph-and-output-panel">
           <section className="graph-container">
-            <MapView nodes={nodes} edges={edges} highlightedPath={highlightedPath} highlightedEdges={highlightedEdges} />
+            <MapView
+              nodes={nodes}
+              edges={edges}
+              highlightedPath={highlightedPath}
+              highlightedEdges={highlightedEdges}
+              visualizationStep={currentVizStep}
+              algorithmType={results?.algo}
+            />
           </section>
         </main>
       </div>
