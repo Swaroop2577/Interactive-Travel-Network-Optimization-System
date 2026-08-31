@@ -116,7 +116,7 @@ const GraphBuilder = () => {
             )}
           </section>
 
-          <section className="form-section">
+          <section className="form-section" style={{ display: 'flex', gap: '10%' }}>
             <button className="button" onClick={undo} disabled={!canUndo}>Undo</button>
             <button className="button danger-button" onClick={clearGraph}>Clear Graph</button>
           </section>
