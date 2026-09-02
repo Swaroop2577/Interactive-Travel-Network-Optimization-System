@@ -155,34 +155,33 @@ const GraphBuilder = () => {
 
           <section className="form-section">
             <h2>Build Network</h2>
-            <label className="note">
-              Cost per km (₹):
-              <input
-                type="number"
-                value={costPerKm}
-                onChange={(e) => setCostPerKm(+e.target.value)}
-                style={{ width: '60px', marginLeft: '6px' }}
-              />
-            </label>
-            <label className="note">
-              Cost per hour (₹):
-              <input
-                type="number"
-                value={hourlyRate}
-                onChange={(e) => setHourlyRate(+e.target.value)}
-                style={{ width: '60px', marginLeft: '6px' }}
-              />
-            </label>
-            <label className="note">
-              Connect each city to nearest (k):
-              <input
-                type="number"
-                min="1"
-                value={kNeighbors}
-                onChange={(e) => setKNeighbors(+e.target.value)}
-                style={{ width: '60px', marginLeft: '6px' }}
-              />
-            </label>
+            <label className="note network-input">
+  <span>Cost per km (₹):</span>
+  <input
+    type="number"
+    value={costPerKm}
+    onChange={(e) => setCostPerKm(+e.target.value)}
+  />
+</label>
+
+<label className="note network-input">
+  <span>Cost per hour (₹):</span>
+  <input
+    type="number"
+    value={hourlyRate}
+    onChange={(e) => setHourlyRate(+e.target.value)}
+  />
+</label>
+
+<label className="note network-input">
+  <span>Connect each city to nearest (k):</span>
+  <input
+    type="number"
+    min="1"
+    value={kNeighbors}
+    onChange={(e) => setKNeighbors(+e.target.value)}
+  />
+</label>
             <button className="button primary-button" onClick={handleBuildNetwork} disabled={building}>
               {building ? 'Building…' : 'Build Network'}
             </button>

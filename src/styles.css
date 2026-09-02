@@ -298,3 +298,25 @@ select:focus, input:focus {
   border-radius: 6px;
   border-left: 4px solid #c62828;
 }
+
+
+.network-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.network-input span {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.network-input input {
+  width: 90px !important;
+  flex: 0 0 90px;
+  margin-left: 0 !important;
+  padding: 12px;
+  font-size: 1em;
+}
