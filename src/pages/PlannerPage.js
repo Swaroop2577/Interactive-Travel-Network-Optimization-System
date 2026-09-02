@@ -157,7 +157,7 @@ const PlannerPage = () => {
                   <>
                     <h3 className="result-title">Trip</h3>
                     <p className="trip-route">
-                      {results.data.path.map((id) => nodes.find((n) => n.id === id)?.label).join(' → ')}
+                      {results.data.path.map((id) => nodes.find((n) => n.id === id)?.label).join(' -> ')} 
                     </p>
                     <p>Distance: {formatResult(results.data.metrics.distance)} km</p>
                     <p>Estimated cost: ₹ {formatResult(results.data.metrics.cost)}</p>
