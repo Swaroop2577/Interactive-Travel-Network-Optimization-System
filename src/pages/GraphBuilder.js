@@ -6,6 +6,12 @@ import { useGraph } from '../context/GraphContext';
 import { geocodeCity } from '../utils/geo';
 import { getDrivingMatrix } from '../utils/osrm';
 
+// Simulated toll settings — NOT real toll data, just a way to make cost
+// mathematically independent of distance for demo purposes.
+const TOLL_PROBABILITY = 0.3; // ~30% of edges get a toll
+const TOLL_MIN_FEE = 100;     // ₹
+const TOLL_MAX_FEE = 400;     // ₹
+
 const GraphBuilder = () => {
   const { nodes, edges, addNode, deleteNode, buildCompleteGraph, clearGraph, undo, canUndo } = useGraph();
 
@@ -47,36 +53,41 @@ const GraphBuilder = () => {
     try {
       const matrix = await getDrivingMatrix(nodes);
 
-      // Build a full pairwise edge list first (with distance/time/cost), same as before.
+      // Build the full pairwise edge list first (with distance/time/cost).
       const allEdges = [];
-      // edgeLookup[i][j] lets us quickly find the edge object between node i and node j.
-      const edgeLookup = nodes.map(() => new Map());
 
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const cell = matrix[i][j];
           if (!cell) continue; // no driving route found between these two
 
+          // Simulated toll: randomly flag this edge and assign a flat fee.
+          // This is fake data, not sourced from OSRM or any real toll provider —
+          // it exists only to stop cost from being a pure multiple of distance.
+          const hasToll = Math.random() < TOLL_PROBABILITY;
+          const tollFee = hasToll
+            ? TOLL_MIN_FEE + Math.round(Math.random() * (TOLL_MAX_FEE - TOLL_MIN_FEE))
+            : 0;
+
           const edge = {
             source: nodes[i].id,
             target: nodes[j].id,
             distance: cell.distanceKm,
             time: cell.durationHours,
-            // Cost now blends distance (fuel) and time (driver/time cost) instead of
-            // being a pure multiple of distance, so "By Cost" can diverge from "By Distance".
-            cost: Math.round(cell.distanceKm * costPerKm + cell.durationHours * hourlyRate),
+            hasToll,
+            tollFee,
+            // Cost blends distance (fuel), time (driver/time cost), and a simulated toll fee.
+            cost: Math.round(
+              cell.distanceKm * costPerKm + cell.durationHours * hourlyRate + tollFee
+            ),
           };
 
           allEdges.push(edge);
-          edgeLookup[i].set(j, edge);
-          edgeLookup[j].set(i, edge);
         }
       }
 
       // k-Nearest-Neighbors filtering: each city only keeps edges to its k closest
-      // cities (by distance), instead of connecting to every other city. This forces
-      // Dijkstra to route through intermediate cities rather than always finding a
-      // direct edge, since real road networks aren't complete graphs either.
+      // cities (by distance), instead of connecting to every other city.
       const k = Math.max(1, Math.floor(kNeighbors) || 1);
       const keepPair = new Set(); // holds "i-j" (i < j) for pairs kept by either side
 
@@ -177,7 +188,10 @@ const GraphBuilder = () => {
             </button>
             {buildError && <p className="error-text">{buildError}</p>}
             {edges.length > 0 && (
-              <p className="note">{edges.length} routes generated (driving, road distance).</p>
+              <p className="note">
+                {edges.length} routes generated (driving, road distance).{' '}
+                {edges.filter((e) => e.hasToll).length} include a simulated toll.
+              </p>
             )}
           </section>
 
